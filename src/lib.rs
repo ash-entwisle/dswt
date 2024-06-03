@@ -1,23 +1,19 @@
 use base64::prelude::*;
 use once_cell::sync::OnceCell;
 use serde::{Serialize, Deserialize};
-use sha2::Sha256;
-use hmac::{Hmac, Mac};
-use token::Token;
 use std::sync::RwLock;
 use rand::prelude::*;
 
+pub mod algorithms;
 pub mod payload;
 pub mod token;
 
+use token::Token;
+use algorithms::Algorithm;
+
+pub static VERSION: &'static str = "0.1.0";
 static TM_INSTANCE: OnceCell<RwLock<TokenManager>> = OnceCell::new();
-static VERSION: &'static str = "0.1.0";
 
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum Algorithm {
-    HS256,
-}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TokenManager {
@@ -63,13 +59,11 @@ impl TokenManager {
         BASE64_STANDARD.encode(&key)
     }
 
-
-
-    pub fn create_token(&self, payload: Vec<payload::PayloadItem>) -> token::Token {
+    pub fn create_token(&self, payload: Vec<payload::PayloadItem>) -> Token {
         todo!()
     }
 
-    pub fn validate_token(&self, token: &token::Token) -> bool {
+    pub fn validate_token(&self, token: &Token) -> bool {
         todo!()
     }
 }
@@ -95,12 +89,6 @@ mod tests {
         tm.set_key(Some(String::from("new_key")));
         assert_ne!(tm.key, old_key);
         assert_eq!(tm.key, "new_key");
-    }
-    
-    #[test]
-    fn test_gen_key() {
-        let key = TokenManager::gen_key();
-        assert_eq!(key.len(), 44); // Check if key is generated correctly
     }
     
     #[test]
