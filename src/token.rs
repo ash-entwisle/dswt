@@ -5,6 +5,8 @@ use hmac::{Hmac, Mac};
 use rand::prelude::*;
 
 use crate::payload;
+use crate::types::PayloadType;
+
 
 /*
     Tokens are in the format:
@@ -149,13 +151,17 @@ impl From<String> for Token {
 
 #[cfg(test)]
 mod tests {
+    use payload::PayloadItem;
+
+    use crate::types::PayloadType;
+
     use super::*;
     
     #[test]
     fn test_new_token() {
         let payload = vec![
-            payload::PayloadItem::new("name", "John", payload::PayloadType::String),
-            payload::PayloadItem::new("age", "30", payload::PayloadType::Int),
+            PayloadItem::new("name", "John", PayloadType::String),
+            PayloadItem::new("age", "30", PayloadType::Int),
         ];
         let token = Token::new(payload.clone());
         
@@ -168,8 +174,8 @@ mod tests {
     #[test]
     fn test_get_hash() {
         let payload = vec![
-            payload::PayloadItem::new("name", "John", payload::PayloadType::String),
-            payload::PayloadItem::new("age", "30", payload::PayloadType::Int),
+            PayloadItem::new("name", "John", PayloadType::String),
+            PayloadItem::new("age", "30", PayloadType::Int),
         ];
         let token = Token::new(payload.clone());
         let hash = token.get_hash();
@@ -180,9 +186,9 @@ mod tests {
     #[test]
     fn test_display() {
         let payload = vec![
-            payload::PayloadItem::new("key1", "value1", payload::PayloadType::String),
-            payload::PayloadItem::new("key2", "value2", payload::PayloadType::String),
-            payload::PayloadItem::new("key3", 10000000, payload::PayloadType::Int),
+            PayloadItem::new("key1", "value1", PayloadType::String),
+            PayloadItem::new("key2", "value2", PayloadType::String),
+            PayloadItem::new("key3", 10000000, PayloadType::Int),
         ];
         let token = Token::new(payload.clone());
         
@@ -196,9 +202,9 @@ mod tests {
     #[test]
     fn test_from_string() {
         let payload = vec![
-            payload::PayloadItem::new("key1", "value1", payload::PayloadType::String),
-            payload::PayloadItem::new("key2", "value2", payload::PayloadType::String),
-            payload::PayloadItem::new("key3", 10000000, payload::PayloadType::Int),
+            PayloadItem::new("key1", "value1", PayloadType::String),
+            PayloadItem::new("key2", "value2", PayloadType::String),
+            PayloadItem::new("key3", 10000000, PayloadType::Int),
         ];
 
         let token = Token::new(payload.clone());

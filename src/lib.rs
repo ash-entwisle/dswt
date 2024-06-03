@@ -1,13 +1,17 @@
+// Crate imports
 use base64::prelude::*;
 use once_cell::sync::OnceCell;
 use serde::{Serialize, Deserialize};
 use std::sync::RwLock;
 use rand::prelude::*;
 
+// Module declarations
 pub mod algorithms;
 pub mod payload;
 pub mod token;
+pub mod types;
 
+// Local imports
 use token::Token;
 use algorithms::Algorithm;
 
@@ -70,7 +74,8 @@ impl TokenManager {
 
 #[cfg(test)]
 mod tests {
-    use payload::{PayloadItem, PayloadType};
+    use payload::PayloadItem;
+    use types::PayloadType;
 
     use super::*;
     
@@ -108,8 +113,8 @@ mod tests {
     fn test_validate_token() {
         let tm = TokenManager::new(None, None, None).read().unwrap();
         let payload = vec![
-            payload::PayloadItem::new("name", "John", payload::PayloadType::String),
-            payload::PayloadItem::new("age", 30, payload::PayloadType::Int),
+            PayloadItem::new("name", "John", PayloadType::String),
+            PayloadItem::new("age", 30, PayloadType::Int),
         ];
         let token = tm.create_token(payload);
         let is_valid = tm.validate_token(&token);
