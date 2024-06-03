@@ -10,7 +10,7 @@ use crate::payload;
     Tokens are in the format:
     header;payload;hash
 
-    header is CWT/<alg> where alg is the algorithm used to hash the payload
+    header is DSWT/<alg> where alg is the algorithm used to hash the payload
     this is base64 encoded
     
     payload is a csv of every item after index 0 in the header 
@@ -159,7 +159,7 @@ mod tests {
         ];
         let token = Token::new(payload.clone());
         
-        assert_eq!(token.header, "CWT/HS256");
+        assert_eq!(token.header, "DSWT/HS256");
         assert_eq!(token.payload, payload);
         assert_eq!(token.valid, true);
         assert_ne!(token.hash, "");
@@ -186,7 +186,7 @@ mod tests {
         ];
         let token = Token::new(payload.clone());
         
-        let expected_display = format!("CWT/HS256;{},{},{};{}", payload[0], payload[1], payload[2], token.hash);
+        let expected_display = format!("WT/HS256;{},{},{};{}", payload[0], payload[1], payload[2], token.hash);
         
         // TODO: fix this test
         // assert_eq!(token.to_string(), expected_display);

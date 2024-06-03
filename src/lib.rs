@@ -1,212 +1,131 @@
 use base64::prelude::*;
+use once_cell::sync::OnceCell;
 use serde::{Serialize, Deserialize};
 use sha2::Sha256;
 use hmac::{Hmac, Mac};
+use token::Token;
+use std::sync::RwLock;
 use rand::prelude::*;
 
 pub mod payload;
+pub mod token;
 
-/*
-    Tokens are in the format:
-    header;payload;hash
-
-    header is CWT/<alg> where alg is the algorithm used to hash the payload
-    this is base64 encoded
-    
-    payload is a csv of every item after index 0 in the header 
-    in the format: `key1:type=value,key2:type=value,...`
-    This is base64 encoded
-
-    hash is the base64 encoded hash of the header and payload
-*/
-
-type HmacSha256 = Hmac<Sha256>;
+static TM_INSTANCE: OnceCell<RwLock<TokenManager>> = OnceCell::new();
+static VERSION: &'static str = "0.1.0";
 
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Token {
-    pub header: String,
-    pub payload: Vec<payload::PayloadItem>,
-    pub hash: String,
-    pub valid: bool,
+pub enum Algorithm {
+    HS256,
 }
 
-impl Token {
-    pub fn new(payload: Vec<payload::PayloadItem>) -> Self {
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TokenManager {
+    ver: &'static str,
+    key: String,
+    alg: Algorithm,
+    typed: bool,
+}
+
+
+impl TokenManager {
+    pub fn new(
+        alg: Option<Algorithm>,
+        typed: Option<bool>,
+        key: Option<String>,
+    ) -> &'static RwLock<TokenManager> {
         
-        let header = "DSWT/HS256".to_string();
-        let mut token = Token { header, payload, hash: "".to_string(), valid: true };
+        let instance = TM_INSTANCE.get_or_init(|| {
 
-        token.hash = token.clone().get_hash();  
-        token
+
+            RwLock::new(TokenManager {
+                ver: VERSION,
+                key: key.unwrap_or_else(|| TokenManager::gen_key()),
+                alg: alg.unwrap_or(Algorithm::HS256),
+                typed: typed.unwrap_or(false),
+            })
+        });
+
+        instance
     }
 
-    pub fn get_hash(self) -> String {
-        
-        let header_b64 = BASE64_STANDARD.encode(&self.header);
-        let payload_str = self.payload.iter()
-            .map(|item| item.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
-
-        let payload_b64 = BASE64_STANDARD.encode(&payload_str);
-
-        let data = format!("{};{}", header_b64, payload_b64);
-
-        let key: String = Token::get_key();
-
-        let mut mac = HmacSha256::new_from_slice(&key.as_bytes()).unwrap();
-
-        mac.update(data.as_bytes());
-
-        BASE64_STANDARD.encode(&mac.finalize().into_bytes())
+    pub fn get_instance() -> &'static RwLock<TokenManager> {
+        TM_INSTANCE.get().unwrap()
     }
 
-    pub fn get_payload_item(&self, key: &str) -> Option<&payload::PayloadItem> {
-        self.payload.iter().find(|item| item.key == key)
+    pub fn set_key(&mut self, key: Option<String>) {
+        self.key = key.unwrap_or_else(|| TokenManager::gen_key());
     }
 
-    fn get_key() -> String {
-        std::env::var("DSWT_SECRET").unwrap_or({
-            let mut rng = rand::thread_rng();
+    pub fn gen_key() -> String {
+        let mut rng = rand::thread_rng();
+        let key: [u8; 32] = rng.gen();
+        BASE64_STANDARD.encode(&key)
+    }
 
-            // generate a random 256 bit key
-            let rnd_key: [u8; 32] = rng.gen();
 
-            let key: String = BASE64_STANDARD.encode(
-                rnd_key.iter()
-                    .map(|x| x.to_string())
-                    .collect::<String>()
-            );
 
-            std::env::set_var("DSWT_SECRET", key.clone());
+    pub fn create_token(&self, payload: Vec<payload::PayloadItem>) -> token::Token {
+        todo!()
+    }
 
-            key
-        })
+    pub fn validate_token(&self, token: &token::Token) -> bool {
+        todo!()
     }
 }
-
-impl std::fmt::Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-    
-        let payload_str = self.payload.iter()
-            .map(|item| item.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
-
-        let header_b64 = BASE64_STANDARD.encode(&self.header);
-        let payload_b64 = BASE64_STANDARD.encode(&payload_str);
-
-        write!(f, "{};{};{}", header_b64, payload_b64, self.hash)
-    }
-}
-
-impl From<String> for Token {
-    fn from(token: String) -> Self {
-
-        println!("Token: {}", &token);
-
-        let parts: Vec<&str> = token.split(';').collect();
-        let header_b64 = parts[0];
-        let payload_b64 = parts[1];
-        let hash = parts[2];
-
-        println!("Header: {}", &header_b64);
-        println!("Payload: {}", &payload_b64);
-        println!("Hash: {}", &hash);
-
-        let header = BASE64_STANDARD.decode(header_b64).unwrap();
-        let payload = BASE64_STANDARD.decode(payload_b64).unwrap();
-
-        let header = String::from_utf8(header).unwrap();
-        let payload = String::from_utf8(payload).unwrap();
-
-        println!("Header: {}", &header);
-        println!("Payload: {}", &payload);
-
-        let payload_items: Vec<payload::PayloadItem> = payload.split(",")
-            .map(|item| item.parse().unwrap())
-            .collect();
-
-        let mut token = Token { 
-            header: header.to_string(),
-            payload: payload_items, 
-            hash: hash.to_string(),
-            valid: false 
-        };
-
-        if token.hash == hash {
-            token.valid = true;
-        } 
-
-        println!("Token: {:?}", token);
-
-        token
-    }
-}
-
-
 
 #[cfg(test)]
 mod tests {
+    use payload::{PayloadItem, PayloadType};
+
     use super::*;
     
     #[test]
-    fn test_new_token() {
-        let payload = vec![
-            payload::PayloadItem::new("name", "John", payload::PayloadType::String),
-            payload::PayloadItem::new("age", "30", payload::PayloadType::Int),
-        ];
-        let token = Token::new(payload.clone());
-        
-        assert_eq!(token.header, "CWT/HS256");
-        assert_eq!(token.payload, payload);
-        assert_eq!(token.valid, true);
-        assert_ne!(token.hash, "");
+    fn test_new_token_manager() {
+        let tm = TokenManager::new(None, None, None).read().unwrap();
+        assert_eq!(tm.ver, VERSION);
+        assert_eq!(tm.alg, Algorithm::HS256);
+        assert_eq!(tm.typed, false);
     }
     
     #[test]
-    fn test_get_hash() {
-        let payload = vec![
-            payload::PayloadItem::new("name", "John", payload::PayloadType::String),
-            payload::PayloadItem::new("age", "30", payload::PayloadType::Int),
-        ];
-        let token = Token::new(payload.clone());
-        let hash = token.get_hash();
-        
-        assert_ne!(hash, "");
+    fn test_set_key() {
+        let mut tm = TokenManager::new(None, None, None).write().unwrap();
+        let old_key = tm.key.clone();
+        tm.set_key(Some(String::from("new_key")));
+        assert_ne!(tm.key, old_key);
+        assert_eq!(tm.key, "new_key");
     }
     
     #[test]
-    fn test_display() {
-        let payload = vec![
-            payload::PayloadItem::new("key1", "value1", payload::PayloadType::String),
-            payload::PayloadItem::new("key2", "value2", payload::PayloadType::String),
-            payload::PayloadItem::new("key3", 10000000, payload::PayloadType::Int),
-        ];
-        let token = Token::new(payload.clone());
-        
-        let expected_display = format!("CWT/HS256;{},{},{};{}", payload[0], payload[1], payload[2], token.hash);
-        
-        // TODO: fix this test
-        // assert_eq!(token.to_string(), expected_display);
-        assert_ne!(token.to_string(), expected_display);
+    fn test_gen_key() {
+        let key = TokenManager::gen_key();
+        assert_eq!(key.len(), 44); // Check if key is generated correctly
     }
-
+    
     #[test]
-    fn test_from_string() {
+    fn test_create_token() {
+        let tm = TokenManager::new(None, None, None).read().unwrap();
         let payload = vec![
-            payload::PayloadItem::new("key1", "value1", payload::PayloadType::String),
-            payload::PayloadItem::new("key2", "value2", payload::PayloadType::String),
-            payload::PayloadItem::new("key3", 10000000, payload::PayloadType::Int),
+            PayloadItem::new("name", "John", PayloadType::String),
+            PayloadItem::new("age", 30, PayloadType::Int),
         ];
+        let token = tm.create_token(payload);
 
-        let token = Token::new(payload.clone());
-        let token_str = token.to_string();
-
-        let token_from_str = Token::from(token_str);
-
-        assert_eq!(token_from_str, token);
+        // Add assertions to check if the token is created correctly
+        todo!();
+    }
+    
+    #[test]
+    fn test_validate_token() {
+        let tm = TokenManager::new(None, None, None).read().unwrap();
+        let payload = vec![
+            payload::PayloadItem::new("name", "John", payload::PayloadType::String),
+            payload::PayloadItem::new("age", 30, payload::PayloadType::Int),
+        ];
+        let token = tm.create_token(payload);
+        let is_valid = tm.validate_token(&token);
+        // Add assertions to check if the token is validated correctly
+        todo!();
     }
 }
-

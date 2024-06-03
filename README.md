@@ -14,6 +14,19 @@ The structure of the tokens version identifier is `DSWT-<num>[-T]`
 where `<num>` is the first version of this crates semver version number. 
 The `-T` is optional and is used to indicate that the token has type information.
 
+### Type Information
+
+Type information is a feature that allows the token to store the type of each value in the payload.
+This is useful when serializing and deserializing the token 
+as it allows the library to automatically convert the data to the correct type.
+The following types are supported:
+
+- `UUID` - A Universally Unique Identifier
+- `string` - A list of characters
+- `int` - A signed integer
+- `float` - A floating-point number
+- `bool` - A boolean value
+
 ## Token Structure
 
 The token is made up of 3 parts; a header, a payload, and a signature separated by semicolons (`;`).
