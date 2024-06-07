@@ -9,7 +9,6 @@ use rand::prelude::*;
 pub mod algorithms;
 pub mod payload;
 pub mod token;
-pub mod types;
 
 // Local imports
 use token::Token;

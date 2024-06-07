@@ -7,7 +7,6 @@ use hmac::{Hmac, Mac};
 use rand::prelude::*;
 
 use crate::payload;
-use crate::types::PayloadType;
 use crate::algorithms::Algorithm;
 
 
