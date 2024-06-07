@@ -25,25 +25,26 @@ use crate::algorithms::Algorithm;
 */
 
 
+/// A token that can be used to authenticate a user
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Token {
 
-    // base64 encoded header
-    // gets formatted into DSWT-<version>/<algorithm>
+    /// version of the token
     pub version: char,
+    
+    /// algorithm used to hash the payload
     pub algorithm: Algorithm,
 
-    // base64 encoded payload
-    // gets formatted into key:type=value,key:type=value,...
-    // if typed is false, then it is formatted into key=value,key=value,...
-    // pub payload: Vec<payload::PayloadItem>,
+    /// payload of the token
     pub payload: HashMap<String, String>,
 
-    // base64 encoded hash of the header and payload
+    /// hash of the token
     pub hash: String,
 }
 
 impl Token {
+
+    /// Create a new token
     pub fn new(
         version: &'static str,
         algorithm: Algorithm,
@@ -62,6 +63,7 @@ impl Token {
         token
     }
     
+    /// Get the hash of the token
     pub fn get_hash(&self, key: &str) -> String {
 
         let to_hash = format!("{};{}",

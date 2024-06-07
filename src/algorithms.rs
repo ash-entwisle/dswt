@@ -2,8 +2,11 @@ use serde::{Deserialize, Serialize};
 
 use std::fmt::Display;
 
+/// The algorithm used to hash the payload
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Algorithm {
+
+    /// HMAC with SHA-256 hashing algorithm
     HS256,
 }
 
