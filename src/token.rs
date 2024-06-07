@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::str::FromStr;
 
@@ -6,7 +7,6 @@ use serde::{Serialize, Deserialize};
 use sha2::Sha256;
 use hmac::{Hmac, Mac};
 
-use crate::payload;
 use crate::algorithms::Algorithm;
 
 
@@ -36,7 +36,8 @@ pub struct Token {
     // base64 encoded payload
     // gets formatted into key:type=value,key:type=value,...
     // if typed is false, then it is formatted into key=value,key=value,...
-    pub payload: Vec<payload::PayloadItem>,
+    // pub payload: Vec<payload::PayloadItem>,
+    pub payload: HashMap<String, String>,
 
     // base64 encoded hash of the header and payload
     pub hash: String,
@@ -46,7 +47,7 @@ impl Token {
     pub fn new(
         version: &'static str,
         algorithm: Algorithm,
-        payload: Vec<payload::PayloadItem>, 
+        payload: HashMap<String, String>,
         key: &str
     ) -> Self {
 
@@ -97,7 +98,7 @@ impl Token {
     fn to_str_payload(&self) -> String {
         
         let payload_str = self.payload.iter()
-            .map(|item| item.to_string())
+            .map(|(key, value)| format!("{}={}", key, value))
             .collect::<Vec<String>>()
             .join(",");
         
@@ -135,10 +136,13 @@ impl FromStr for Token {
         let version = header[0].chars().nth(5).unwrap();
         let algorithm = Algorithm::from(header[1]);
 
-        let payload = payload.split(',').collect::<Vec<&str>>();
-        let payload = payload.iter()
-            .map(|item| item.parse::<payload::PayloadItem>().unwrap())
-            .collect::<Vec<payload::PayloadItem>>();
+        let payload = payload.split(',').collect::<Vec<&str>>()
+            .iter()
+            .map(|item| {
+                let item = item.split('=').collect::<Vec<&str>>();
+                (item[0].to_string(), item[1].to_string())
+            })
+            .collect::<HashMap<String, String>>();
 
         Ok(Token {
             version,
