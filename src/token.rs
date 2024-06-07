@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::str::FromStr;
 
 use base64::prelude::*;
 use serde::{Serialize, Deserialize};
@@ -47,7 +48,7 @@ impl Token {
         version: &'static str,
         algorithm: Algorithm,
         payload: Vec<payload::PayloadItem>, 
-        key: String
+        key: &str
     ) -> Self {
 
         let mut token = Token { 
@@ -60,25 +61,30 @@ impl Token {
         token.set_hash(key);
         token
     }
-
-    fn set_hash(&mut self, key: String) {
+    
+    pub fn get_hash(&self, key: &str) -> String {
 
         let to_hash = format!("{};{}",
             self.to_str_header(),
             self.to_str_payload()
         );
 
-        let hash: String = match self.algorithm {
+        match self.algorithm {
             Algorithm::HS256 => {
                 let mut mac = Hmac::<Sha256>::new_from_slice(key.as_bytes()).unwrap();
                 mac.update(to_hash.as_bytes());
                 BASE64_STANDARD.encode(&mac.finalize().into_bytes())
             }
-        };
-
-        self.hash = hash;
+        }
+    }
+    
+    fn set_hash(&mut self, key: &str) {
+        self.hash = self.get_hash(key);
     }
 
+}
+
+impl Token {
     fn to_str_header(&self) -> String {
         
         let fmt = format!("DSWT-{}/{}", 
@@ -107,6 +113,40 @@ impl Display for Token {
             self.to_str_payload(), 
             self.hash
         )
+    }
+}
+
+impl FromStr for Token {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        
+        let parts: Vec<&str> = s.split(';').collect();
+
+        let header = parts[0];
+        let payload = parts[1];
+        let hash = parts[2];
+
+        let header = BASE64_STANDARD.decode(header).unwrap();
+        let payload = BASE64_STANDARD.decode(payload).unwrap();
+
+        let header = String::from_utf8(header).unwrap();
+        let payload = String::from_utf8(payload).unwrap();
+
+        let header = header.split('/').collect::<Vec<&str>>();
+        let version = header[0].chars().nth(5).unwrap();
+        let algorithm = Algorithm::from(header[1]);
+
+        let payload = payload.split(',').collect::<Vec<&str>>();
+        let payload = payload.iter()
+            .map(|item| item.parse::<payload::PayloadItem>().unwrap())
+            .collect::<Vec<payload::PayloadItem>>();
+
+        Ok(Token {
+            version,
+            algorithm,
+            payload,
+            hash: hash.to_string(),
+        })
     }
 }
 

@@ -29,3 +29,31 @@ impl From<&str> for Algorithm {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_algorithm_display() {
+        assert_eq!(Algorithm::HS256.to_string(), "HS256");
+    }
+
+    #[test]
+    fn test_algorithm_default() {
+        let algorithm: Algorithm = Default::default();
+        assert_eq!(algorithm, Algorithm::HS256);
+    }
+
+    #[test]
+    fn test_algorithm_from_str_valid() {
+        let algorithm: Algorithm = "HS256".into();
+        assert_eq!(algorithm, Algorithm::HS256);
+    }
+
+    #[test]
+    fn test_algorithm_from_str_invalid() {
+        let algorithm: Algorithm = "invalid".into();
+        assert_eq!(algorithm, Algorithm::HS256);
+    }
+}
