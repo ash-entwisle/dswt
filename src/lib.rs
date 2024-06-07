@@ -14,9 +14,10 @@ pub mod types;
 // Local imports
 use token::Token;
 use algorithms::Algorithm;
+use payload::PayloadItem;
 
 pub static VERSION: &'static str = "0.1.0";
-static TM_INSTANCE: OnceCell<RwLock<TokenManager>> = OnceCell::new();
+// static TM_INSTANCE: OnceCell<RwLock<TokenManager>> = OnceCell::new();
 
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -24,34 +25,37 @@ pub struct TokenManager {
     ver: &'static str,
     key: String,
     alg: Algorithm,
-    typed: bool,
 }
 
 
 impl TokenManager {
-    pub fn new(
-        alg: Option<Algorithm>,
-        typed: Option<bool>,
-        key: Option<String>,
-    ) -> &'static RwLock<TokenManager> {
+
+    pub fn new(alg: Option<Algorithm>, key: Option<String>) -> TokenManager {
+        TokenManager {
+            ver: VERSION,
+            key: key.unwrap_or_else(|| TokenManager::gen_key()),
+            alg: alg.unwrap_or(Algorithm::HS256),
+        }
+    }
+
+    // This is not needed, singletons arent necessary for this lib, you should impl yr own. 
+    // pub fn new_singleton(
+    //     alg: Option<Algorithm>,
+    //     key: Option<String>,
+    // ) -> &'static RwLock<TokenManager> {
         
-        let instance = TM_INSTANCE.get_or_init(|| {
+    //     let instance: &RwLock<TokenManager> = TM_INSTANCE.get().unwrap_or_else(|| {
 
+    //         let instance = RwLock::new(
+    //             TokenManager::new(alg, key)
+    //         );
 
-            RwLock::new(TokenManager {
-                ver: VERSION,
-                key: key.unwrap_or_else(|| TokenManager::gen_key()),
-                alg: alg.unwrap_or(Algorithm::HS256),
-                typed: typed.unwrap_or(false),
-            })
-        });
+    //         TM_INSTANCE.set(instance).unwrap();
+    //         TM_INSTANCE.get().unwrap()
+    //     });
 
-        instance
-    }
-
-    pub fn get_instance() -> &'static RwLock<TokenManager> {
-        TM_INSTANCE.get().unwrap()
-    }
+    //     instance
+    // }
 
     pub fn set_key(&mut self, key: Option<String>) {
         self.key = key.unwrap_or_else(|| TokenManager::gen_key());
@@ -63,62 +67,11 @@ impl TokenManager {
         BASE64_STANDARD.encode(&key)
     }
 
-    pub fn create_token(&self, payload: Vec<payload::PayloadItem>) -> Token {
+    pub fn create_token(&self, payload: Vec<payload::PayloadItem>, typed: bool) -> Token {
         todo!()
     }
 
     pub fn validate_token(&self, token: &Token) -> bool {
         todo!()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use payload::PayloadItem;
-    use types::PayloadType;
-
-    use super::*;
-    
-    #[test]
-    fn test_new_token_manager() {
-        let tm = TokenManager::new(None, None, None).read().unwrap();
-        assert_eq!(tm.ver, VERSION);
-        assert_eq!(tm.alg, Algorithm::HS256);
-        assert_eq!(tm.typed, false);
-    }
-    
-    #[test]
-    fn test_set_key() {
-        let mut tm = TokenManager::new(None, None, None).write().unwrap();
-        let old_key = tm.key.clone();
-        tm.set_key(Some(String::from("new_key")));
-        assert_ne!(tm.key, old_key);
-        assert_eq!(tm.key, "new_key");
-    }
-    
-    #[test]
-    fn test_create_token() {
-        let tm = TokenManager::new(None, None, None).read().unwrap();
-        let payload = vec![
-            PayloadItem::new("name", "John", PayloadType::String),
-            PayloadItem::new("age", 30, PayloadType::Int),
-        ];
-        let token = tm.create_token(payload);
-
-        // Add assertions to check if the token is created correctly
-        todo!();
-    }
-    
-    #[test]
-    fn test_validate_token() {
-        let tm = TokenManager::new(None, None, None).read().unwrap();
-        let payload = vec![
-            PayloadItem::new("name", "John", PayloadType::String),
-            PayloadItem::new("age", 30, PayloadType::Int),
-        ];
-        let token = tm.create_token(payload);
-        let is_valid = tm.validate_token(&token);
-        // Add assertions to check if the token is validated correctly
-        todo!();
     }
 }

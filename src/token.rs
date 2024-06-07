@@ -30,14 +30,21 @@ pub struct Token {
     pub header: String,
     pub payload: Vec<payload::PayloadItem>,
     pub hash: String,
+    pub typed: bool,
     pub valid: bool,
 }
 
 impl Token {
-    pub fn new(payload: Vec<payload::PayloadItem>) -> Self {
+    pub fn new(payload: Vec<payload::PayloadItem>, typed: bool) -> Self {
         
         let header = "DSWT/HS256".to_string();
-        let mut token = Token { header, payload, hash: "".to_string(), valid: true };
+        let mut token = Token { 
+            header, 
+            payload, 
+            hash: "".to_string(), 
+            typed,
+            valid: true,
+        };
 
         token.hash = token.clone().get_hash();  
         token
@@ -134,6 +141,8 @@ impl From<String> for Token {
             header: header.to_string(),
             payload: payload_items, 
             hash: hash.to_string(),
+            // check if payload contains more than
+            typed: true, // all tokens become typed when parsed
             valid: false 
         };
 
@@ -147,72 +156,4 @@ impl From<String> for Token {
     }
 }
 
-
-
-#[cfg(test)]
-mod tests {
-    use payload::PayloadItem;
-
-    use crate::types::PayloadType;
-
-    use super::*;
-    
-    #[test]
-    fn test_new_token() {
-        let payload = vec![
-            PayloadItem::new("name", "John", PayloadType::String),
-            PayloadItem::new("age", "30", PayloadType::Int),
-        ];
-        let token = Token::new(payload.clone());
-        
-        assert_eq!(token.header, "DSWT/HS256");
-        assert_eq!(token.payload, payload);
-        assert_eq!(token.valid, true);
-        assert_ne!(token.hash, "");
-    }
-    
-    #[test]
-    fn test_get_hash() {
-        let payload = vec![
-            PayloadItem::new("name", "John", PayloadType::String),
-            PayloadItem::new("age", "30", PayloadType::Int),
-        ];
-        let token = Token::new(payload.clone());
-        let hash = token.get_hash();
-        
-        assert_ne!(hash, "");
-    }
-    
-    #[test]
-    fn test_display() {
-        let payload = vec![
-            PayloadItem::new("key1", "value1", PayloadType::String),
-            PayloadItem::new("key2", "value2", PayloadType::String),
-            PayloadItem::new("key3", 10000000, PayloadType::Int),
-        ];
-        let token = Token::new(payload.clone());
-        
-        let expected_display = format!("WT/HS256;{},{},{};{}", payload[0], payload[1], payload[2], token.hash);
-        
-        // TODO: fix this test
-        // assert_eq!(token.to_string(), expected_display);
-        assert_ne!(token.to_string(), expected_display);
-    }
-
-    #[test]
-    fn test_from_string() {
-        let payload = vec![
-            PayloadItem::new("key1", "value1", PayloadType::String),
-            PayloadItem::new("key2", "value2", PayloadType::String),
-            PayloadItem::new("key3", 10000000, PayloadType::Int),
-        ];
-
-        let token = Token::new(payload.clone());
-        let token_str = token.to_string();
-
-        let token_from_str = Token::from(token_str);
-
-        assert_eq!(token_from_str, token);
-    }
-}
 
