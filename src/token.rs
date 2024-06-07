@@ -30,7 +30,7 @@ use crate::algorithms::Algorithm;
 pub struct Token {
 
     /// version of the token
-    pub version: char,
+    pub version: u8,
     
     /// algorithm used to hash the payload
     pub algorithm: Algorithm,
@@ -46,14 +46,14 @@ impl Token {
 
     /// Create a new token
     pub fn new(
-        version: &'static str,
+        version: u8,
         algorithm: Algorithm,
         payload: HashMap<String, String>,
         key: &str
     ) -> Self {
 
         let mut token = Token { 
-            version: version.chars().next().unwrap(),
+            version,
             algorithm,
             payload,
             hash: "".to_string(),
@@ -147,7 +147,7 @@ impl FromStr for Token {
             .collect::<HashMap<String, String>>();
 
         Ok(Token {
-            version,
+            version: version.to_digit(10).unwrap() as u8,
             algorithm,
             payload,
             hash: hash.to_string(),

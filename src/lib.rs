@@ -22,15 +22,15 @@ pub mod token;
 
 
 /// Version of the library
-pub static VERSION: &'static str = "0.1.0";
+pub static VERSION: u8 = 1;
 
 
 /// Token Manager
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TokenManager {
-    ver: &'static str,
+    version: u8,
     key: String,
-    alg: Algorithm,
+    algorithm: Algorithm,
 }
 
 
@@ -39,9 +39,9 @@ impl TokenManager {
     /// Create a new TokenManager
     pub fn new(alg: Option<Algorithm>, key: Option<String>) -> TokenManager {
         TokenManager {
-            ver: VERSION,
+            version: VERSION,
             key: key.unwrap_or_else(|| TokenManager::gen_key()),
-            alg: alg.unwrap_or(Algorithm::HS256),
+            algorithm: alg.unwrap_or(Algorithm::HS256),
         }
     }
 
@@ -60,8 +60,8 @@ impl TokenManager {
     /// Create a new token
     pub fn create_token(&self, payload: HashMap<String, String>) -> Token {
         Token::new(
-            self.ver, 
-            self.alg.clone(), 
+            self.version,
+            self.algorithm.clone(), 
             payload, &self.key
         )
     }
