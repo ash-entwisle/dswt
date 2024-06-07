@@ -5,7 +5,6 @@ use base64::prelude::*;
 use serde::{Serialize, Deserialize};
 use sha2::Sha256;
 use hmac::{Hmac, Mac};
-use rand::prelude::*;
 
 use crate::payload;
 use crate::algorithms::Algorithm;
@@ -77,7 +76,7 @@ impl Token {
             }
         }
     }
-    
+
     fn set_hash(&mut self, key: &str) {
         self.hash = self.get_hash(key);
     }

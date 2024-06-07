@@ -1,8 +1,6 @@
 // Crate imports
 use base64::prelude::*;
-use once_cell::sync::OnceCell;
 use serde::{Serialize, Deserialize};
-use std::sync::RwLock;
 use rand::prelude::*;
 
 // Module declarations
@@ -13,7 +11,6 @@ pub mod token;
 // Local imports
 use token::Token;
 use algorithms::Algorithm;
-use payload::PayloadItem;
 
 pub static VERSION: &'static str = "0.1.0";
 
@@ -46,7 +43,7 @@ impl TokenManager {
         BASE64_STANDARD.encode(&key)
     }
 
-    pub fn create_token(&self, payload: Vec<payload::PayloadItem>, typed: bool) -> Token {
+    pub fn create_token(&self, payload: Vec<payload::PayloadItem>) -> Token {
         Token::new(
             self.ver, 
             self.alg.clone(), 
@@ -61,6 +58,8 @@ impl TokenManager {
 
 #[cfg(test)]
 mod tests {
+    use payload::PayloadItem;
+
     use super::*;
     
     #[test]
@@ -121,7 +120,7 @@ mod tests {
             PayloadItem::new("age", "30"),
         ];
         
-        let token = token_manager.create_token(payload.clone(), true);
+        let token = token_manager.create_token(payload.clone());
         let ver_char = VERSION.chars().next().unwrap();
 
         assert_eq!(token.version, ver_char);
@@ -137,7 +136,7 @@ mod tests {
             PayloadItem::new("name", "John"),
             PayloadItem::new("age", "30"),
         ];
-        let token = token_manager.create_token(payload.clone(), true);
+        let token = token_manager.create_token(payload.clone());
         
         let is_valid = token_manager.validate_token(&token);
         
@@ -151,7 +150,7 @@ mod tests {
             PayloadItem::new("name", "John"),
             PayloadItem::new("age", "30"),
         ];
-        let mut token = token_manager.create_token(payload.clone(), true);
+        let mut token = token_manager.create_token(payload.clone());
         token.hash = "invalid_hash".to_string();
         
         let is_valid = token_manager.validate_token(&token);
