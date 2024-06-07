@@ -30,9 +30,8 @@ use crate::algorithms::Algorithm;
 pub struct Token {
 
     // base64 encoded header
-    // gets formatted into DSWT-<version>[-T (if typed)]/<algorithm>
+    // gets formatted into DSWT-<version>/<algorithm>
     pub version: char,
-    pub typed: bool,
     pub algorithm: Algorithm,
 
     // base64 encoded payload
@@ -47,7 +46,6 @@ pub struct Token {
 impl Token {
     pub fn new(
         version: &'static str,
-        typed: bool,
         algorithm: Algorithm,
         payload: Vec<payload::PayloadItem>, 
         key: String
@@ -55,7 +53,6 @@ impl Token {
 
         let mut token = Token { 
             version: version.chars().next().unwrap(),
-            typed,
             algorithm,
             payload,
             hash: "".to_string(),
@@ -85,9 +82,8 @@ impl Token {
 
     fn to_str_header(&self) -> String {
         
-        let fmt = format!("DSWT-{}{}/{}", 
+        let fmt = format!("DSWT-{}/{}", 
             self.version, 
-            if self.typed { "-T" } else { "" }, 
             self.algorithm
         );
 
