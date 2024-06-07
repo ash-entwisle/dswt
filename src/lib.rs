@@ -16,7 +16,6 @@ use algorithms::Algorithm;
 use payload::PayloadItem;
 
 pub static VERSION: &'static str = "0.1.0";
-// static TM_INSTANCE: OnceCell<RwLock<TokenManager>> = OnceCell::new();
 
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -36,25 +35,6 @@ impl TokenManager {
             alg: alg.unwrap_or(Algorithm::HS256),
         }
     }
-
-    // This is not needed, singletons arent necessary for this lib, you should impl yr own. 
-    // pub fn new_singleton(
-    //     alg: Option<Algorithm>,
-    //     key: Option<String>,
-    // ) -> &'static RwLock<TokenManager> {
-        
-    //     let instance: &RwLock<TokenManager> = TM_INSTANCE.get().unwrap_or_else(|| {
-
-    //         let instance = RwLock::new(
-    //             TokenManager::new(alg, key)
-    //         );
-
-    //         TM_INSTANCE.set(instance).unwrap();
-    //         TM_INSTANCE.get().unwrap()
-    //     });
-
-    //     instance
-    // }
 
     pub fn set_key(&mut self, key: Option<String>) {
         self.key = key.unwrap_or_else(|| TokenManager::gen_key());
