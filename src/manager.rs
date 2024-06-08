@@ -38,19 +38,6 @@ impl TokenManager {
         }
     }
 
-    // Dont think its needed??
-    // /// Set the key for the TokenManager
-    // pub fn set_key(&mut self, key: Option<String>) {
-    //     self.key = key.unwrap_or_else(|| TokenManager::gen_key());
-    // }
-    //
-    // /// Set the algorithm for the TokenManager
-    // pub fn gen_key() -> String {
-    //     let mut rng = rand::thread_rng();
-    //     let key: [u8; 32] = rng.gen();
-    //     BASE64_STANDARD.encode(&key)
-    // }
-
     /// Create a new token
     /// 
     /// ```rust

@@ -9,21 +9,6 @@ use hmac::{Hmac, Mac};
 use crate::Algorithm;
 
 
-/*
-    Tokens are in the format:
-    header;payload;hash
-
-    header is DSWT/<alg> where alg is the algorithm used to hash the payload
-    this is base64 encoded
-    
-    payload is a csv of every item after index 0 in the header 
-    in the format: `key1:type=value,key2:type=value,...`
-    This is base64 encoded
-
-    hash is the base64 encoded hash of the header and payload
-*/
-
-
 
 /// A struct that holds information about a Delimeter Separated Web Token. 
 /// It is not reccomended to create a token directly using this struct,
