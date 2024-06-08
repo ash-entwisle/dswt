@@ -3,11 +3,10 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 use base64::prelude::*;
-use serde::{Serialize, Deserialize};
 use sha2::Sha256;
 use hmac::{Hmac, Mac};
 
-use crate::algorithms::Algorithm;
+use crate::Algorithm;
 
 
 /*
@@ -25,35 +24,53 @@ use crate::algorithms::Algorithm;
 */
 
 
-/// A token that can be used to authenticate a user
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+
+/// A struct that holds information about a Delimeter Separated Web Token. 
+/// It is not reccomended to create a token directly using this struct,
+/// instead create one through the `TokenManager` struct.
+#[derive(Debug, Clone, PartialEq)]
 pub struct Token {
 
-    /// version of the token
+    /// version of the token, this is automatically set to the crate version and should not be changed
     pub version: u8,
     
-    /// algorithm used to hash the payload
+    /// Te algorithm used to hash the payload
     pub algorithm: Algorithm,
 
-    /// payload of the token
+    /// payload of the token stored in a hashmap as key-value pairs
     pub payload: HashMap<String, String>,
 
-    /// hash of the token
+    /// hash of the token that gets generated when the token is created, it is used to verify the token is valid
+    /// this is automatically set when the token is created and should not be changed
     pub hash: String,
 }
 
 impl Token {
 
-    /// Create a new token
+    /// Create a new token with the given algorithm, payload, and key
+    /// 
+    /// Example:
+    /// ```rust
+    /// let payload: HashMap<String, String> = [
+    ///     ("key1".to_string(), "value1".to_string()),
+    ///     ("key2".to_string(), "value2".to_string()),
+    ///     ("key3".to_string(), "value3".to_string()),
+    /// ].iter().cloned().collect();
+    /// 
+    /// let token = Token::new(
+    ///     Algorithm::HS256, // or any other algorithm
+    ///     payload,
+    ///     "your_key_here".to_string()
+    /// );
+    /// ```
     pub fn new(
-        version: u8,
         algorithm: Algorithm,
         payload: HashMap<String, String>,
         key: &str
     ) -> Self {
 
         let mut token = Token { 
-            version,
+            version: crate::VERSION,
             algorithm,
             payload,
             hash: "".to_string(),
@@ -63,7 +80,20 @@ impl Token {
         token
     }
     
-    /// Get the hash of the token
+    /// Get the hash of the token using the given key
+    /// 
+    /// Example:
+    /// ```rust
+    /// let token = Token::new(
+    ///     Algorithm::HS256, // or any other algorithm
+    ///     payload,
+    ///     "your_key_here".to_string()
+    /// );
+    /// 
+    /// let hash = token.get_hash("your_key_here");
+    /// 
+    /// assert_eq!(hash, token.hash);
+    /// ```
     pub fn get_hash(&self, key: &str) -> String {
 
         let to_hash = format!("{};{}",
