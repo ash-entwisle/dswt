@@ -1,8 +1,3 @@
-// Crate imports
-use base64::prelude::*;
-use rand::prelude::*;
-
-// std imports
 use std::collections::HashMap;
 
 use crate::{Algorithm, Token, VERSION};

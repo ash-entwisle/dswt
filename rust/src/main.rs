@@ -20,7 +20,8 @@ fn main() {
     let token_str = token.to_string();
     println!("{}", token_str);
 
-    let token2: Token = token_str.parse().unwrap();
+    // let token2: Token = token_str.parse().unwrap();
+
 
     
 }
