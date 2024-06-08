@@ -8,13 +8,19 @@
 //! 
 //! ## Usage
 //! 
-//! To use DSWT, you need to create a `TokenManager` with the algorithm you want to use and the key you want to use.
+//! There are two ways to create DSWT's, with the `Token` struct or with the `TokenManager` struct.
+//! The `Token` struct is used to create tokens directly giving you more control over the token.
+//! While the `TokenManager` struct can be used to create and validate tokens with a key and algorithm.
+//! 
+//! ### With TokenManager
+//! 
+//! To create DSWT's with TokenManager, you first need to initialize a `TokenManager` with an `Algorithm` and a key.
 //! You then need a payload that you want to encode into a token.
 //! This is a hashmap of key-value pairs where the key is a string and the value is a string.
 //! You then create a token with the `create_token` method on the `TokenManager` and pass in the payload.
 //! This will then return your token of type `Token`.
 //! 
-//! ```rust
+//! ```
 //! use std::collections::HashMap;
 //! 
 //! use dswt::{Algorithm, Token, TokenManager};
@@ -39,8 +45,44 @@
 //! 
 //!     let token2: Token = token_str.parse().unwrap();
 //! 
-//!     
+//!     assert_eq!(token, token2);
 //! }
+//! ```
+//! 
+//! ### Without TokenManager
+//! 
+//! To create DSWT's without the `TokenManager` struct, you can use the `Token` struct directly.
+//! You can create a token with the `new` method on the `Token` struct and pass in the algorithm, payload, and key.
+//! This will then return your token of type `Token`.
+//! 
+//! ```
+//! use std::collections::HashMap;
+//! 
+//! use dswt::{Algorithm, Token};
+//! 
+//! fn main() {
+//! 
+//!     let payload: HashMap<String, String> = [
+//!         ("key1".to_string(), "value1".to_string()),
+//!         ("key2".to_string(), "value2".to_string()),
+//!         ("key3".to_string(), "value3".to_string()),
+//!     ].iter().cloned().collect();
+//!     
+//!     let token: Token = Token::new(
+//!         Algorithm::HS256,
+//!         payload,
+//!         "your_key"
+//!     );
+//! 
+//!     let token_str = token.to_string();
+//! 
+//!     println!("{}", token_str);
+//! 
+//!     let token2: Token = token_str.parse().unwrap();
+//!     
+//!     assert_eq!(token, token2); 
+//! }  
+//! 
 //! ```
 //! 
 //! ## Format

@@ -33,21 +33,6 @@ pub struct Token {
 impl Token {
 
     /// Create a new token with the given algorithm, payload, and key
-    /// 
-    /// Example:
-    /// ```rust
-    /// let payload: HashMap<String, String> = [
-    ///     ("key1".to_string(), "value1".to_string()),
-    ///     ("key2".to_string(), "value2".to_string()),
-    ///     ("key3".to_string(), "value3".to_string()),
-    /// ].iter().cloned().collect();
-    /// 
-    /// let token = Token::new(
-    ///     Algorithm::HS256, // or any other algorithm
-    ///     payload,
-    ///     "your_key_here".to_string()
-    /// );
-    /// ```
     pub fn new(
         algorithm: Algorithm,
         payload: HashMap<String, String>,
@@ -66,19 +51,6 @@ impl Token {
     }
     
     /// Get the hash of the token using the given key
-    /// 
-    /// Example:
-    /// ```rust
-    /// let token = Token::new(
-    ///     Algorithm::HS256, // or any other algorithm
-    ///     payload,
-    ///     "your_key_here".to_string()
-    /// );
-    /// 
-    /// let hash = token.get_hash("your_key_here");
-    /// 
-    /// assert_eq!(hash, token.hash);
-    /// ```
     pub fn get_hash(&self, key: &str) -> String {
 
         let to_hash = format!("{};{}",

@@ -22,5 +22,5 @@ fn main() {
 
     let token2: Token = token_str.parse().unwrap();
 
-    assert_eq!(token, token2);
+    
 }

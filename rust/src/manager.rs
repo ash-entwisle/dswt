@@ -24,12 +24,7 @@ pub struct TokenManager {
 impl TokenManager {
 
     /// Function to create a new TokenManager
-    /// 
-    /// ```rust
-    /// let token_manager = TokenManager::new(
-    ///     Algorithm::HS256, 
-    ///     "your_key" 
-    /// );
+
     pub fn new(alg: Algorithm, key: &str) -> TokenManager {
         TokenManager {
             version: VERSION,
@@ -38,10 +33,7 @@ impl TokenManager {
         }
     }
 
-    /// Create a new token
-    /// 
-    /// ```rust
-    /// let token = token_manager.create_token(payload_as_hashmap);
+    /// Create a new token``
     pub fn create_token(&self, payload: HashMap<String, String>) -> Token {
         Token::new(
             self.algorithm.clone(), 
