@@ -1,11 +1,19 @@
 [package]
+
 name = "dswt"
+description = "An alternate webtoken format"
 authors = ["ash-entwisle"]
+
+license = "AGPL-3.0-or-later"
+license-file = "LICENSE"
+readme = "README.md"
+
+repository = "https://github.com/ash-entwisle/dswt"
+homepage = "https://github.com/ash-entwisle/dswt"
+
 version = "0.1.1"
 edition = "2021"
 
-description = "An alternate webtoken format"
-license = "AGPL-3.0-or-later"
 
 [profile.release]
 opt-level = 3
