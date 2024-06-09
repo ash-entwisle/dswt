@@ -10,8 +10,6 @@ TODO
 
 ## Examples
 
-### Rust
-
 ```rust
 use std::collections::HashMap;
 
