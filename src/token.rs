@@ -3,22 +3,20 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 use base64::prelude::*;
-use sha2::Sha256;
 use hmac::{Hmac, Mac};
+use serde::{Deserialize, Serialize};
+use sha2::Sha256;
 
 use crate::Algorithm;
 
-
-
-/// A struct that holds information about a Delimeter Separated Web Token. 
+/// A struct that holds information about a Delimeter Separated Web Token.
 /// It is not reccomended to create a token directly using this struct,
 /// instead create one through the `TokenManager` struct.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Token {
-
     /// version of the token, this is automatically set to the crate version and should not be changed
     pub version: u8,
-    
+
     /// Te algorithm used to hash the payload
     pub algorithm: Algorithm,
 
@@ -31,15 +29,9 @@ pub struct Token {
 }
 
 impl Token {
-
     /// Create a new token with the given algorithm, payload, and key
-    pub fn new(
-        algorithm: Algorithm,
-        payload: HashMap<String, String>,
-        key: &str
-    ) -> Self {
-
-        let mut token = Token { 
+    pub fn new(algorithm: Algorithm, payload: HashMap<String, String>, key: &str) -> Self {
+        let mut token = Token {
             version: crate::VERSION,
             algorithm,
             payload,
@@ -49,14 +41,10 @@ impl Token {
         token.set_hash(key);
         token
     }
-    
+
     /// Get the hash of the token using the given key
     pub fn get_hash(&self, key: &str) -> String {
-
-        let to_hash = format!("{};{}",
-            self.to_str_header(),
-            self.to_str_payload()
-        );
+        let to_hash = format!("{};{}", self.to_str_header(), self.to_str_payload());
 
         match self.algorithm {
             Algorithm::HS256 => {
@@ -70,36 +58,34 @@ impl Token {
     fn set_hash(&mut self, key: &str) {
         self.hash = self.get_hash(key);
     }
-
 }
 
 impl Token {
     fn to_str_header(&self) -> String {
-        
-        let fmt = format!("DSWT-{}/{}", 
-            self.version, 
-            self.algorithm
-        );
+        let fmt = format!("DSWT-{}/{}", self.version, self.algorithm);
 
         BASE64_STANDARD.encode(&fmt)
     }
 
     fn to_str_payload(&self) -> String {
-        
-        let payload_str = self.payload.iter()
+        let payload_str = self
+            .payload
+            .iter()
             .map(|(key, value)| format!("{}={}", key, value))
             .collect::<Vec<String>>()
             .join(",");
-        
+
         BASE64_STANDARD.encode(&payload_str)
     }
 }
 
 impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{};{};{}", 
-            self.to_str_header(), 
-            self.to_str_payload(), 
+        write!(
+            f,
+            "{};{};{}",
+            self.to_str_header(),
+            self.to_str_payload(),
             self.hash
         )
     }
@@ -108,7 +94,6 @@ impl Display for Token {
 impl FromStr for Token {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        
         let parts: Vec<&str> = s.split(';').collect();
 
         let header = parts[0];
@@ -125,7 +110,9 @@ impl FromStr for Token {
         let version = header[0].chars().nth(5).unwrap();
         let algorithm = Algorithm::from(header[1]);
 
-        let payload = payload.split(',').collect::<Vec<&str>>()
+        let payload = payload
+            .split(',')
+            .collect::<Vec<&str>>()
             .iter()
             .map(|item| {
                 let item = item.split('=').collect::<Vec<&str>>();
@@ -141,4 +128,3 @@ impl FromStr for Token {
         })
     }
 }
-

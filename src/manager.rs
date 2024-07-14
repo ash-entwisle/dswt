@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 
+use serde::{Deserialize, Serialize};
+
 use crate::{Algorithm, Token, VERSION};
 
 /// A struct that manages the creation and validation of tokens created with a given key and algorithm
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TokenManager {
 
     #[doc(hidden)]
