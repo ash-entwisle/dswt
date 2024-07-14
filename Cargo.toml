@@ -11,7 +11,7 @@ readme = "README.md"
 repository = "https://github.com/ash-entwisle/dswt"
 homepage = "https://github.com/ash-entwisle/dswt"
 
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 
 

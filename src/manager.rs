@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{Algorithm, Token, VERSION};
 
 /// A struct that manages the creation and validation of tokens created with a given key and algorithm
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, Eq)]
 pub struct TokenManager {
 
     #[doc(hidden)]

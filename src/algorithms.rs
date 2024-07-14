@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 // TODO: add to this list as more algorithms are added, make sure to update the tests
 
 /// The current avaliable algorithms available for hashing the payload
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
 pub enum Algorithm {
 
     /// HMAC with SHA256 (TODO: link to hmac docs)

@@ -12,7 +12,7 @@ use crate::Algorithm;
 /// A struct that holds information about a Delimeter Separated Web Token.
 /// It is not reccomended to create a token directly using this struct,
 /// instead create one through the `TokenManager` struct.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default, Eq)]
 pub struct Token {
     /// version of the token, this is automatically set to the crate version and should not be changed
     pub version: u8,
